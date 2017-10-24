@@ -99,7 +99,9 @@ final class ProductDocumentFactory implements ProductDocumentFactoryInterface
         );
         $variantDocuments = [];
         foreach ($iterator as $variant) {
-            $variantDocuments[] = $this->variantDocumentFactory->create($variant, $channel, $locale);
+            if ($variant->hasChannelPricingForChannel($channel)) {
+                $variantDocuments[] = $this->variantDocumentFactory->create($variant, $channel, $locale);
+            }
         }
 
         /** @var ImageDocument[] $imageDocuments */

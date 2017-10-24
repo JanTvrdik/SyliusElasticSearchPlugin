@@ -86,12 +86,14 @@ final class ProductDocumentFactory implements ProductDocumentFactoryInterface
         ChannelInterface $channel
     ): ProductDocument {
         /** @var ProductVariantInterface[] $productVariants */
-        $productVariants = $product->getVariants();
+        $productVariants = $product->getVariants()->filter(function (ProductVariantInterface $productVariant) use ($channel): bool {
+            return $productVariant->hasChannelPricingForChannel($channel);
+        });
 
         /**
          * @var ArrayObject
          */
-        $iterator = $product->getVariants()->getIterator();
+        $iterator = $productVariants->getIterator();
         $iterator->uasort(
             function (ProductVariantInterface $a, ProductVariantInterface $b) {
                 return $a->getName() <=> $b->getName();
@@ -99,7 +101,9 @@ final class ProductDocumentFactory implements ProductDocumentFactoryInterface
         );
         $variantDocuments = [];
         foreach ($iterator as $variant) {
-            $variantDocuments[] = $this->variantDocumentFactory->create($variant, $channel, $locale);
+            if ($variant->hasChannelPricingForChannel($channel)) {
+                $variantDocuments[] = $this->variantDocumentFactory->create($variant, $channel, $locale);
+            }
         }
 
         /** @var ImageDocument[] $imageDocuments */
